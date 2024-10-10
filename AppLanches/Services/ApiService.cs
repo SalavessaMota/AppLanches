@@ -187,4 +187,10 @@ public class ApiService
         }
     }
 
+    public async Task<(Product? Product, string? ErrorMessage)> GetProductDetails(int productId)
+    {
+        string endpoint = $"api/Products/{productId}";
+        return await GetAsync<Product>(endpoint);
+    }
+
 }
