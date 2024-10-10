@@ -24,11 +24,37 @@ public partial class CartPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await GetCartItems();
+        /**/
 
+        if (IsNavigatingToEmptyCartPage()) return;
+
+        bool hasItems = await GetCartItems();
+
+        if (hasItems)
+        {
+            ShowAddress();
+        }
+        else
+        {
+            await NavigateToEmptyCart();
+        }
+    }
+
+    private bool IsNavigatingToEmptyCartPage()
+    {
+        if (_isNavigatingToEmptyCartPage)
+        {
+            _isNavigatingToEmptyCartPage = false;
+            return true;
+        }
+        return false;
+    }
+
+    private void ShowAddress()
+    {
         bool savedAddress = Preferences.ContainsKey("Address");
 
-        if (savedAddress)
+        if(savedAddress)
         {
             string name = Preferences.Get("Name", string.Empty);
             string address = Preferences.Get("Address", string.Empty);
@@ -38,8 +64,15 @@ public partial class CartPage : ContentPage
         }
         else
         {
-            LblEndereco.Text = "No address saved";
+           LblEndereco.Text = "No address saved";
         }
+    }
+
+    private async Task NavigateToEmptyCart()
+    {
+        LblEndereco.Text = string.Empty;
+        _isNavigatingToEmptyCartPage = true;
+        await Navigation.PushAsync(new EmptyCartPage());
     }
 
 
@@ -152,8 +185,39 @@ public partial class CartPage : ContentPage
         Navigation.PushAsync(new AddressPage());
     }
 
-    private void TapConfirmarPedido_Tapped(object sender, TappedEventArgs e)
+    private async void TapConfirmarPedido_Tapped(object sender, TappedEventArgs e)
     {
+        if(CartItems == null || !CartItems.Any())
+        {
+            DisplayAlert("Information", "Your cart is empty or the order has already been confirmed", "OK");
+            return;
+        }
+
+        var order =new Order()
+        {
+            Address = LblEndereco.Text,
+            UserId = Preferences.Get("UserId", 0),
+            Total = Convert.ToDecimal(LblPrecoTotal.Text)
+        };
+
+        var response = await _apiService.ConfirmOrder(order);
+
+        if (response.HasError)
+        {
+            if (response.ErrorMessage == "Unauthorized")
+            {
+                await DisplayLoginPage();
+                return;
+            }
+            await DisplayAlert("Hmmm..", $"Something went wrong: {response.ErrorMessage}", "Cancel");
+            return;
+        }
+
+        CartItems.Clear();
+        LblEndereco.Text = "No address saved";
+        LblPrecoTotal.Text = "0.00";
+
+        await Navigation.PushAsync(new OrderConfirmedPage());
 
     }
 }

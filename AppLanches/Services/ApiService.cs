@@ -135,6 +135,32 @@ public class ApiService
 
     }
 
+    public async Task<ApiResponse<bool>> ConfirmOrder(Order order)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(order, _serializerOptions);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await PostRequest("api/Orders", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                string errorMessage = response.StatusCode == HttpStatusCode.Unauthorized ? "Unauthorized" : $"Error in request: {response.ReasonPhrase}";
+
+                _logger.LogError($"Error in HTTP request: {response.StatusCode}");
+                return new ApiResponse<bool> { ErrorMessage = errorMessage };
+            }
+            return new ApiResponse<bool> { Data = true };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error confirming order: {ex.Message}");
+            return new ApiResponse<bool> { ErrorMessage = ex.Message };
+        }
+    }
+
+
     private async Task<HttpResponseMessage> PostRequest(string uri, HttpContent content)
     {
         var url = _baseUrl + uri;
