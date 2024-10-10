@@ -151,6 +151,67 @@ public class ApiService
         }
     }
 
+    public async Task<(bool Data, string? ErrorMessage)> UpdateCartItemQuantity(int productId, string action)
+    {
+        try
+        {
+            var content = new StringContent(string.Empty, Encoding.UTF8, "application/json");
+            var response = await PutRequest($"api/ShoppingCartItems?productId={productId}&action={action}", content);
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, null);
+            }
+            else
+            {
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    string errorMessage = "Unauthorized";
+                    _logger.LogWarning(errorMessage);
+                    return (false, errorMessage);
+                }
+                string generalErrorMessage = $"Error in request: {response.ReasonPhrase}";
+                _logger.LogError(generalErrorMessage);
+                return (false, generalErrorMessage);
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            string errorMessage = $"Error in HTTP request: {ex.Message}";
+            _logger.LogError(ex, errorMessage);
+            return (false, errorMessage);
+        }
+        catch (JsonException ex)
+        {
+            string errorMessage = $"Error in JSON deserialize: {ex.Message}";
+            _logger.LogError(ex, errorMessage);
+            return (false, errorMessage);
+        }
+        catch (Exception ex)
+        {
+            string errorMessage = $"Unexpected error: {ex.Message}";
+            _logger.LogError(ex, errorMessage);
+            return (false, errorMessage);
+        }
+    }
+
+
+    private async Task<HttpResponseMessage> PutRequest(string uri, HttpContent content)
+    {
+        var url = AppConfig.BaseUrl + uri;
+        try
+        {
+            AddAuthorizationHeader();
+            var result = await _httpClient.PutAsync(url, content);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            // Log o erro ou trate conforme necessário
+            _logger.LogError($"Error sending PUT request to {uri}: {ex.Message}");
+            return new HttpResponseMessage(HttpStatusCode.BadRequest);
+        }
+    }
+
     public async Task<(List<Category>? Categories, string? ErrorMessage)> GetCategories()
     {
         return await GetAsync<List<Category>>("api/categories");

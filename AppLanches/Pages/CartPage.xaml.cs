@@ -25,6 +25,21 @@ public partial class CartPage : ContentPage
     {
         base.OnAppearing();
         await GetCartItems();
+
+        bool savedAddress = Preferences.ContainsKey("Address");
+
+        if (savedAddress)
+        {
+            string name = Preferences.Get("Name", string.Empty);
+            string address = Preferences.Get("Address", string.Empty);
+            string phone = Preferences.Get("Phone", string.Empty);
+
+            LblEndereco.Text = $"{name}\n{address}\n{phone}";
+        }
+        else
+        {
+            LblEndereco.Text = "No address saved";
+        }
     }
 
 
@@ -91,27 +106,50 @@ public partial class CartPage : ContentPage
     }
 
 
-
-
-
-    private void BtnDecrementar_Clicked(object sender, EventArgs e)
+    private async void BtnIncrementar_Clicked(object sender, EventArgs e)
     {
-
+        if(sender is Button button && button.BindingContext is CartItem cartItem)
+        {
+            cartItem.Quantity++;
+            UpdateTotalPrice();
+            await _apiService.UpdateCartItemQuantity(cartItem.ProductId, "aumentar");
+        }
     }
 
-    private void BtnIncrementar_Clicked(object sender, EventArgs e)
-    {
 
+
+    private async void BtnDecrementar_Clicked(object sender, EventArgs e)
+    {
+        if(sender is Button button && button.BindingContext is CartItem cartItem)
+        {
+            if (cartItem.Quantity == 1) return;
+            else
+            {
+                cartItem.Quantity--;
+                UpdateTotalPrice();
+                await _apiService.UpdateCartItemQuantity(cartItem.ProductId, "diminuir");
+            }
+        }
     }
 
-    private void BtnDeletar_Clicked(object sender, EventArgs e)
-    {
 
+    private async void BtnDeletar_Clicked(object sender, EventArgs e)
+    {
+        if(sender is ImageButton button && button.BindingContext is CartItem cartItem)
+        {
+            bool resposta = await DisplayAlert("Confirm","Are you sure you want to delete this item from cart?","Yes","No");
+            if (resposta)
+            {
+                CartItems.Remove(cartItem);
+                UpdateTotalPrice();
+                await _apiService.UpdateCartItemQuantity(cartItem.ProductId, "apagar");
+            }
+        }
     }
 
     private void BtnEditaEndereco_Clicked(object sender, EventArgs e)
     {
-
+        Navigation.PushAsync(new AddressPage());
     }
 
     private void TapConfirmarPedido_Tapped(object sender, TappedEventArgs e)
