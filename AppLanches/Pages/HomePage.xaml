@@ -11,7 +11,7 @@
         <VerticalStackLayout Grid.Row="0"  Spacing="3">
             <Label x:Name="LblNomeUsuario"
                    FontSize="Large" />
-            <Label Text="Are you hungry? How about a snack ?!"
+            <Label Text="Are you hungry ? How about a snack ?!"
                    FontAttributes="Bold"
                    TextColor="#a90409"
                    FontSize="Subtitle" />
