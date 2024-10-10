@@ -39,7 +39,7 @@ public partial class ProductDetailsPage : ContentPage
         if (produtoDetalhe == null)
         {
             // Lidar com o erro, exibir mensagem ou logar
-            await DisplayAlert("Erro", errorMessage ?? "Não foi possível obter o produto.", "OK");
+            await DisplayAlert("Erro", errorMessage ?? "Could not get the product.", "OK");
             return null;
         }
 
@@ -54,7 +54,7 @@ public partial class ProductDetailsPage : ContentPage
         }
         else
         {
-            await DisplayAlert("Erro", errorMessage ?? "Não foi possível obter os detalhes do produto.", "OK");
+            await DisplayAlert("Erro", errorMessage ?? "Could not get the product details.", "OK");
             return null;
         }
         return produtoDetalhe;
@@ -73,16 +73,70 @@ public partial class ProductDetailsPage : ContentPage
 
     private void BtnRemove_Clicked(object sender, EventArgs e)
     {
+        if (int.TryParse(LblQuantidade.Text, out int quantidade) &&
+            decimal.TryParse(LblProdutoPreco.Text, out decimal precoUnitario))
+        {
+            // Decrementa a quantidade, e n o permite que seja menor que 1
+            quantidade = Math.Max(1, quantidade - 1);
+            LblQuantidade.Text = quantidade.ToString();
 
+            // Calcula o pre o total
+            var precoTotal = quantidade * precoUnitario;
+            LblPrecoTotal.Text = precoTotal.ToString();
+        }
+        else
+        {
+            // Tratar caso as convers es falhem
+            DisplayAlert("Erro", "Valores inv lidos", "OK");
+        }
     }
 
     private void BtnAdiciona_Clicked(object sender, EventArgs e)
     {
+        if (int.TryParse(LblQuantidade.Text, out int quantidade) &&
+      decimal.TryParse(LblProdutoPreco.Text, out decimal precoUnitario))
+        {
+            // Incrementa a quantidade
+            quantidade++;
+            LblQuantidade.Text = quantidade.ToString();
 
+            // Calcula o pre o total
+            var precoTotal = quantidade * precoUnitario;
+            LblPrecoTotal.Text = precoTotal.ToString(); // Formata como moeda
+        }
+        else
+        {
+            // Tratar caso as convers es falhem
+            DisplayAlert("Erro", "Valores inv lidos", "OK");
+        }
     }
 
-    private void BtnIncluirNoCarrinho_Clicked(object sender, EventArgs e)
+    private async void BtnIncluirNoCarrinho_Clicked(object sender, EventArgs e)
     {
-
+        try
+        {
+            var cart = new Cart()
+            {
+                Quantity = Convert.ToInt32(LblQuantidade.Text),
+                Price = Convert.ToDecimal(LblProdutoPreco.Text),
+                TotalValue = Convert.ToDecimal(LblPrecoTotal.Text),
+                ProductId = _productId,
+                ClientId = Preferences.Get("UserId", 0)
+            };
+            var response = await _apiService.AddItemToCart(cart);
+            if (response.Data)
+            {
+                await DisplayAlert("Success", "Item added to cart !", "OK");
+                await Navigation.PopAsync();
+            }
+            else
+            {
+                await DisplayAlert("Erro", $"Error adding item: {response.ErrorMessage}", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"An error occurred: {ex.Message}", "OK");
+        }
     }
 }
