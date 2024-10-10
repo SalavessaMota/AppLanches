@@ -100,6 +100,13 @@ public class ApiService
             return new ApiResponse<bool> { ErrorMessage = ex.Message };
         }
     }
+
+    public async Task<(List<CartItem>? CartItems, string? ErrorMessage)> GetItemsCart(int userId)
+    {
+        var endpoint = $"api/ShoppingCartItems/{userId}";
+        return await GetAsync<List<CartItem>>(endpoint);
+    }
+
     public async Task<ApiResponse<bool>> AddItemToCart(Cart cart)
     {
         try
