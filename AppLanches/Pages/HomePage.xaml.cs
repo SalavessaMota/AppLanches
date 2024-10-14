@@ -168,9 +168,7 @@ public partial class HomePage : ContentPage
         if (currentSelection == null)
             return;
 
-        Navigation.PushAsync(new ProductDetailsPage(
-                                 currentSelection.Id, currentSelection.Name!, _apiService, _validator
-        ));
+        Navigation.PushAsync(new ProductDetailsPage(currentSelection.Id, currentSelection.Name!, _apiService, _validator));
 
         collectionView.SelectedItem = null;
     }

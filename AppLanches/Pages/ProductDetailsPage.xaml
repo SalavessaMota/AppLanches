@@ -26,7 +26,8 @@
                      x:Name="ImagemBtnFavorito"                      
                      Clicked="ImagemBtnFavorito_Clicked"/>
 
-        <HorizontalStackLayout Spacing="20"                               HorizontalOptions="Center"
+        <HorizontalStackLayout Spacing="20"                               
+                               HorizontalOptions="Center"
                                Margin="20"
                                Grid.Row="1">
 
