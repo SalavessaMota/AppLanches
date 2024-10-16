@@ -73,12 +73,12 @@ public partial class ProfilePage : ContentPage
             }
             else
             {
-                await DisplayAlert("Error", response.ErrorMessage ?? "Unexepected error occurred", "Cancel");
+                await DisplayAlert("Error", response.ErrorMessage ?? "Unexpected error occurred", "Cancel");
             }
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Erro", $"Ocorreu um erro inesperado: {ex.Message}", "Ok");
+            await DisplayAlert("Erro", $"Unexpected error occurred: {ex.Message}", "Ok");
         }
     }
 
@@ -114,7 +114,7 @@ public partial class ProfilePage : ContentPage
 
     private void TapPedidos_Tapped(object sender, TappedEventArgs e)
     {
-
+        Navigation.PushAsync(new OrdersPage(_apiService, _validator));
     }
 
     private void MinhaConta_Tapped(object sender, TappedEventArgs e)
