@@ -27,6 +27,10 @@ public partial class OrdersPage : ContentPage
     {
         try
         {
+            //Show loading indicator
+            loadPedidosIndicator.IsRunning = true;
+            loadPedidosIndicator.IsVisible = true;
+
             var (orders, errorMessage) = await _apiService.GetOrdersByUser(Preferences.Get("UserId", 0));
 
             if (errorMessage == "Unauthorized" && !_loginPageDisplayed)
@@ -51,6 +55,11 @@ public partial class OrdersPage : ContentPage
         catch (Exception)
         {
             await DisplayAlert("Error", "Could not get orders. Try again later", "OK");
+        }
+        finally
+        {
+            loadPedidosIndicator.IsRunning = false;
+            loadPedidosIndicator.IsVisible = false;
         }
     }
 
